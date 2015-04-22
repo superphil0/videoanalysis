@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(VideoAnalysis)
 
 find_package( OpenCV REQUIRED )
-include_directories(/usr/local/include/)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "-std=c++11")
 
