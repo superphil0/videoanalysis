@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(VideoAnalysis)
 
+set(OpenCV_DIR C:\\Code\\opencv\\build)
 find_package( OpenCV REQUIRED )
 include_directories(${OpenCV_INCLUDE_DIRS})
+
 
 SET(CMAKE_CXX_FLAGS "-std=c++11")
 
@@ -21,7 +23,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
 file(GLOB_RECURSE SRC_FILES
 	${CMAKE_SOURCE_DIR}/src/*.cpp
 	${CMAKE_SOURCE_DIR}/src/*.h
-)
+) 
 
 add_executable(VideoAnalysis ${SRC_FILES})
 
