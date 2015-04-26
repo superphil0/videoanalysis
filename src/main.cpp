@@ -26,14 +26,16 @@ int processVideo(string path, string filename, int frames, int initframes)
 		ss << setw(4) << setfill('0') << i;
 		string str_i(ss.str());
 		string fullpath = path + PATH_SEPARATOR + filename + "_" + str_i;
-		image = cv::imread(fullpath, 1);
-		processFrame(image);
+		image = cv::imread(fullpath, CV_LOAD_IMAGE_COLOR);
+		processFrame(image, i < initframes);
 		string s = "Processing frame " + str_i+"\n";
 		printf(s.c_str());
 	}
 }
-void processFrame(cv::Mat image)
+void processFrame(cv::Mat image, bool isLearnFrame)
 {
+	string s = std::to_string(image.channels());
+	printf(s.c_str());
 	cv::Mat gray_image;
 	// convert to grayscale
 	//cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
