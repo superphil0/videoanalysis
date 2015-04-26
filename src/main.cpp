@@ -1,4 +1,7 @@
 #include "main.h"
+#include <cstdint>
+#include <math.h>
+
 int main(int argc, char** argv)
 {
 	if (argc < 5)
@@ -28,7 +31,7 @@ int processVideo(string path, string filename, int frames, int initframes)
 		string fullpath = path + PATH_SEPARATOR + filename + "_" + str_i;
 		image = cv::imread(fullpath, CV_LOAD_IMAGE_COLOR);
 		processFrame(image, i < initframes);
-		string s = "Processing frame " + str_i+"\n";
+		string s = "Processing frame " + fullpath+"\n";
 		printf(s.c_str());
 	}
 }
@@ -36,7 +39,15 @@ void processFrame(cv::Mat image, bool isLearnFrame)
 {
 	string s = std::to_string(image.channels());
 	printf(s.c_str());
-	cv::Mat gray_image;
+	for (int i = 0; i < image.rows; i++)
+	{
+		for (int j = 0; j < image.cols; j++)
+		{
+			cv::Vec3b bgrPixel = image.at<cv::Vec3b>(i, j);
+
+			// do something with BGR values...
+		}
+	}
 	// convert to grayscale
 	//cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
 	//cv::imwrite( "../../images/Gray_Image.jpg", gray_image );
