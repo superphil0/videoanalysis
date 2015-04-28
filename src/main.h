@@ -4,8 +4,20 @@
 #include <iomanip>
 #include <iostream>
 #include <opencv2/core/core.hpp>
+#include <opencv2/video/background_segm.hpp>
+
 using namespace std;
-cv::Mat ref_var, ref_mean;	
+cv::Mat ref_var, ref_mean;
+
+cv::Ptr<cv::BackgroundSubtractor> pMOG;
+cv::Mat fgMask;
+
+int nbSamples = 20;                   // number of samples per pixel
+int reqMatches = 2;                   // #_min
+int radius = 50;                      // R
+int subsamplingFactor = 16;           // amount of random subsampling
+uchar samples[720][576][20];  // background model
+
 #if defined(WIN32) || defined(_WIN32) 
 #define PATH_SEPARATOR "\\" 
 #else 
@@ -13,7 +25,13 @@ cv::Mat ref_var, ref_mean;
 #endif
 
 int processVideo(string path, string filename, int frames, int initframes);
+
 cv::Mat processFrame(cv::Mat image, int learnframes, int framenum);
+
+cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum);
+
+cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum);
+
 string type2str(int type) {
 	string r;
 
