@@ -23,29 +23,36 @@ int processVideo(string path, string filename, int frames, int initframes)
 {
 	cv::Mat image;
 	string fullpath = path + PATH_SEPARATOR + filename + "_0000.jpeg";
-	image = cv::imread(fullpath, CV_LOAD_IMAGE_COLOR);
+	image = cv::imread(fullpath, cv::IMREAD_COLOR);
 	ref_mean = cv::Mat::zeros(image.rows, image.cols,CV_32FC3);
 	ref_var = cv::Mat::zeros(image.rows, image.cols,CV_32FC3);
 	// read files in loop
 	for (int i = 0; i < frames; i++)
 	{
+        string s = "Loading frame " + fullpath+"\n";
+		printf(s.c_str());
+    
 		ostringstream ss;
 		ss << setw(4) << setfill('0') << i;
 		string str_i(ss.str());
 		string fullpath = path + PATH_SEPARATOR + filename + "_" + str_i +".jpeg";
+
 		image = cv::imread(fullpath, cv::IMREAD_COLOR);
 		if (!image.data)
 		{
 			printf(" No image data \n ");
 		}
+      
+        s = "Processing frame " + fullpath+"\n";
+		printf(s.c_str());
 		cv::Mat result = processFrame(image, initframes,i);
+      
 		string savepath = path + PATH_SEPARATOR + "Seg_" + filename + "_" + str_i + ".jpeg";
 		if (result.data && !DEBUG)
 		{
 			cv::imwrite(savepath, result);
 		}
-		string s = "Processing frame " + fullpath+"\n";
-		printf(s.c_str());
+		
 	}
 	return 0;
 }
@@ -96,7 +103,7 @@ cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
 		mask = delta >= 0.99999f;
 		delta.setTo(fgAlpha, mask);
 
-		cv::cvtColor(delta,delta, CV_GRAY2BGR,3);
+		cv::cvtColor(delta,delta, cv::COLOR_GRAY2BGR,3);
 		cv::Mat reciAlpha, change;
 		cv::subtract(cv::Scalar::all(1.0f), delta, reciAlpha);
 		cv::namedWindow("haha", cv::WINDOW_AUTOSIZE);
