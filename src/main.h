@@ -16,6 +16,7 @@ cv::Mat fgMask;
 int imgWidth;
 int imgHeight;
 
+int nbSamples = 20;
 const static int reqMatches = 3;
 const static int radius = 30;
 const static int subsamplingFactor = 4;

@@ -159,6 +159,10 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
     cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
 
     if (needsInit) {
+        if (learnframes < nbSamples) {
+            nbSamples = learnframes;
+        }
+    
         cv::Size s = image.size();
         imgWidth = s.width;
         imgHeight = s.height;
@@ -167,18 +171,22 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
         for (int i = 0; i < imgWidth; i++) {
             samples[i].resize(imgHeight);
             for (int j = 0; j < imgHeight; j++) {
-                samples[i][j].resize(learnframes);
+                samples[i][j].resize(nbSamples);
             }
         }
         
         needsInit = false;
     }
     
+    if (framenum < learnframes - nbSamples) {
+        return cv::Mat();
+    }
+    
     if (framenum < learnframes)
 	{
         for (int x = 0; x < imgWidth; x++){
             for (int y = 0; y < imgHeight; y++){
-                samples[x][y][framenum] = image.at<uchar>(cv::Point(x,y));
+                samples[x][y][framenum-learnframes+nbSamples] = image.at<uchar>(cv::Point(x,y));
             }
         }
         return cv::Mat();
@@ -190,7 +198,7 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
         for (int y = 0; y < imgHeight; y++){
             // comparison with the model
             int count = 0, index = 0, distance = 0;
-            while ((count < reqMatches) && (index < learnframes)){
+            while ((count < reqMatches) && (index < nbSamples)){
                 uchar color_a = image.at<uchar>(cv::Point(x,y));
                 uchar color_b = samples[x][y][index];
                 distance = abs(color_a - color_b);
@@ -208,7 +216,7 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
                 // update of the current pixel model
                 if (randomNumber == 0){ // random subsampling
                     // other random values are ignored
-                    randomNumber = rand()%learnframes;
+                    randomNumber = rand()%nbSamples;
                     samples[x][y][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }
                 // update of a neighboring pixel model
@@ -218,7 +226,7 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
                     int neighborX, neighborY;
                     chooseRandomNeighbor(x, y, neighborX, neighborY);
                     // chooses the value to be replaced randomly
-                    randomNumber = rand()%learnframes;
+                    randomNumber = rand()%nbSamples;
                     samples[neighborX][neighborY][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }	
             }
