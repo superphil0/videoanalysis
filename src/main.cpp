@@ -33,7 +33,7 @@ int processVideo(string path, string filename, int frames, int initframes)
 	for (int i = 0; i < frames; i++)
 	{
         string s = "Loading frame " + fullpath+"\n";
-		printf(s.c_str());
+		printf("%s", s.c_str());
     
 		ostringstream ss;
 		ss << setw(4) << setfill('0') << i;
@@ -47,7 +47,7 @@ int processVideo(string path, string filename, int frames, int initframes)
 		}
       
         s = "Processing frame " + fullpath+"\n";
-		printf(s.c_str());
+		printf("%s", s.c_str());
 		cv::Mat result = processFrameVIBE(image, initframes, i);
       
 		string savepath = path + PATH_SEPARATOR + "Seg_" + filename + "_" + str_i + ".jpeg";
@@ -158,6 +158,7 @@ void chooseRandomNeighbor(int x, int y, int &xn, int &yn) {
 cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
     cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
 
+    // we need to initialize the data structure before the first frame
     if (needsInit) {
         if (learnframes < nbSamples) {
             nbSamples = learnframes;
@@ -178,10 +179,10 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
         needsInit = false;
     }
     
+    // let's do some initial sampling (NOTE: we do not sample from the neighbor like it was mentioned in the paper)
     if (framenum < learnframes - nbSamples) {
         return cv::Mat();
     }
-    
     if (framenum < learnframes)
 	{
         for (int x = 0; x < imgWidth; x++){
@@ -192,79 +193,85 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
         return cv::Mat();
 	}
     
+    // this holds our result
     cv::Mat segmentationMap = cv::Mat::zeros(image.size(), CV_8U);
     
+    // TODO this could be done in a OpenCV way using Matrixes
     for (int x = 0; x < imgWidth; x++){
         for (int y = 0; y < imgHeight; y++){
-            // comparison with the model
-            int count = 0, index = 0, distance = 0;
+        
+            // we look for as many matches as defined by reqMatches
+            int count = 0;
+            int index = 0;
             while ((count < reqMatches) && (index < nbSamples)){
                 uchar color_a = image.at<uchar>(cv::Point(x,y));
                 uchar color_b = samples[x][y][index];
-                distance = abs(color_a - color_b);
+                int distance = abs(color_a - color_b);
                 //distance = cv::norm(color_a, color_b, cv::NORM_L2);
                 if (distance < radius)
                     count++;
                 index++;
             }
-            // pixel classification according to reqMatches
-            if (count >= reqMatches){ // the pixel belongs to the background
-                // stores the result in the segmentation map
+            
+            // if we have enough matches, the pixel belongs to the background
+            if (count >= reqMatches) {
                 segmentationMap.at<uchar>(cv::Point(x,y)) = 0;
-                // gets a random number between 0 and subsamplingFactor-1
+                
+                // we might now update a sample for the current pixel
                 int randomNumber = rand()%subsamplingFactor;
-                // update of the current pixel model
-                if (randomNumber == 0){ // random subsampling
-                    // other random values are ignored
+                if (randomNumber == 0) {
                     randomNumber = rand()%nbSamples;
                     samples[x][y][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }
-                // update of a neighboring pixel model
+                
+                // we might now update a neighbor pixel
                 randomNumber = rand()%subsamplingFactor;
-                if (randomNumber == 0){ // random subsampling
-                    // chooses a neighboring pixel randomly
+                if (randomNumber == 0) {
                     int neighborX, neighborY;
                     chooseRandomNeighbor(x, y, neighborX, neighborY);
-                    // chooses the value to be replaced randomly
                     randomNumber = rand()%nbSamples;
                     samples[neighborX][neighborY][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }	
             }
             else
             {
-                // the pixel belongs to the foreground
-                // stores the result in the segmentation map
+                // pixel in foreground
                 segmentationMap.at<uchar>(cv::Point(x,y)) = 255;
             }
         }
     }
     
+    // here we do some postprocessing
+    
+    // closing removes some noise and helps to close gaps between components
     cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
     cv::morphologyEx(segmentationMap, segmentationMap, cv::MORPH_CLOSE, element);
     
+    // we fill contours, as we assume that objects don't have any holes
     vector<vector<cv::Point>> contours;
     cv::findContours(segmentationMap, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
-    
     for( int i = 0; i< contours.size(); i++ )
-     {
+    {
        cv::drawContours(segmentationMap, contours, i, 255, -1);
-     }
+    }
     
     //cv::medianBlur(segmentationMap, segmentationMap, 3);
     
-    
-    
-    cv::imshow("Org", image);
-    cv::imshow("Seg", segmentationMap);
-    cv::waitKey();
+    if (DEBUG) {
+        cv::imshow("Org", image);
+        cv::imshow("Seg", segmentationMap);
+        cv::waitKey();
+    }
     
     return segmentationMap;
 }
 
 cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum) {
     pMOG->apply(image, fgMask);
-    cv::imshow("Org", image);
-    cv::imshow("Seg", fgMask);
-    cv::waitKey();
+    if (DEBUG) {
+        cv::imshow("Org", image);
+        cv::imshow("Seg", fgMask);
+        cv::waitKey();
+    }
     return image;
 }
