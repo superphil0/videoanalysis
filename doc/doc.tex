@@ -19,17 +19,9 @@ Die 1. Aufgabe bestand darin ein Verfahren zur Segmentierung von Vordergrundobje
 
 Wir haben C++ und OpenCV gew\"ahlt um die Aufgabe zu l\"osen. Unser Source-Code besteht aus den beiden Files \texttt{main.h} und \texttt{main.cpp}.
 
-In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und globale Variablen, die wir verwendet haben. Der Gro\ss{}teil der Implementation befindet sich im Sourcefile \texttt{main.cpp}. Der Code ist folgendermaßen aufgegliedert:
+In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und globale Variablen, die wir verwendet haben. Der Gro\ss{}teil der Implementation befindet sich im Sourcefile \texttt{main.cpp}. 
 
-\paragraph{\texttt{processFrameCMV()}} Unsere Implementierung der \textit{Color Mean and Variance}-Methode. N\"aheres dazu im Abschnitt \ref{sec:cmv}.
 
-\paragraph{\texttt{processFrameVIBE()}} Unsere Implementierung der \textit{ViBe}-Methode. N\"aheres dazu im Abschnitt \ref{sec:vibe}.
-
-\paragraph{\texttt{processFrameMOG()}} Eine Funktion, welche die OpenCV eigene Implementierung des \textit{Gaussian Mixture}-basierten Segmentierungs-Algorithmus' verwendet.
-
-\paragraph{\texttt{processVideo()}} Diese Methode iteriert \"uber die Bild-Dateien und ruft f\"ur jede Datei eine der oben genannten Methoden auf. Sie erh\"alt anschlie\ss{}end das segmentierte Bild und speichert dieses als Datei ab.
-
-\paragraph{\texttt{main()}} Hier werden die Argumente abgearbeitet und die Methode \texttt{processVideo()} aufgerufen.
 
 \section{Color Mean and Variance}\label{sec:cmv}
 Bei der Color Mean and Variance Methode wird für jedes Pixel und jeden Farbkanal extra ein Modell gebaut. Jedes Pixel wird als eigenes Signal interpretiert, für das in der Initalisierungphase eine Normalverteilung mit $N(\mu, \sigma)$ gefunden wird. 
@@ -40,15 +32,18 @@ Um Veränderungen der externen Umst\"ande in das Modell einflie\ss{} zu lassen, 
 Bei CMV hatten wir vorallem das Problem, dass wenn Pixel nicht als Vordergrund erkannt werden, sie als Hintergrundpixel entsprechend stark gewichtet werden und unser Modell an entsprechenden Stellen sehr schnell eine hohe Varianz adaptiert, die mehr oder weniger fast alles als Hintergrund detektiert.
 
 \section{ViBe}\label{sec:vibe}
-ViBe ist ein Sample-basierter Algorithmus zum Segmentieren von Vordergrund-Objekten in Videostreams. Das Hintergrundmodell besteht aus $width \times height \times nbSamples$ Samples, wobei $width$ und $height$ die Breite und H\"ohe des Videostreams bezeichnen und $nbSamples$ ein w\"ahlbarer Parameter f\"ur die Anzahl an Samples pro Pixel ist. 
+ViBe ist ein Sample-basierter Algorithmus zur Segmentierung von Vordergrundobjekten in Videostreams. Das Hintergrundmodell besteht aus $width \times height \times nbSamples$ Samples, wobei $width$ und $height$ die Breite und H\"ohe des Videostreams bezeichnen und $nbSamples$ ein w\"ahlbarer Parameter f\"ur die Anzahl an Samples pro Pixel ist. 
 
-Laut dem Paper reicht f\"ur die Initialisierung des Hintergrundmodells ein einzelnes Frame, da f\"ur jedes Pixel auch aus der n\"aheren Umgebung gesamplet werden kann. In unserer Implementierung samplen wir dennoch aus mehreren Frames, da durch die Natur der Angabe davon auszugehen ist, dass es immer eine gewisse Anzahl an Initialisierungsframes geben wird. 
+\paragraph{Initalisierung}
+F\"ur die Initialisierungedes Hintergrundmodells reicht ein einzelnes Frame, da f\"ur jedes Pixel auch aus der n\"aheren Umgebung gesamplet werden kann. In unserer Implementierung samplen wir dennoch aus mehreren Frames, da durch die Natur der Angabe davon auszugehen ist, dass es immer eine gewisse Anzahl an Initialisierungsframes geben wird und sich das positiv auf unser Modell auswirkt.
 
-Segmentiert wird, indem der Wert jedes Pixels mit den entsprechenden Samples verglichen wird. Es wird gez\"ahlt f\"ur wie viele Samples, die Distanz kleiner einem gegebenem Radius ist. \"Uberschreitet dieser Wert einen weiteren Parameter \texttt{reqMatches}, so wird angenommen, dass das Pixel zum Hintergrund geh\"ort.
+Segmentiert wird, indem der Wert jedes Pixels mit den entsprechenden Samples verglichen wird. Es wird gez\"ahlt f\"ur wie viele Samples, die Distanz kleiner einem festgelegten threshold ist. \"Uberschreiten diesen Wert mehr als \texttt{reqMatches} Pixel eines Samples, so wird angenommen, dass dieser Pixel zum Hintergrund geh\"ort.
 
-Sollte das Pixel Teil des Hintergrund sein, so wird das Hintergrundmodell zuf\"allig upgedatet. Im Schnitt jedes $n$-te Mal wird ein zuf\"alliges Sample f\"ur dieses Pixel durch den Wert des aktuellen Pixel ersetzt. Ebenso wird jedes $n$-te Mal ein zuf\"alliges Sample eines zuf\"alligen Pixels in der Nachbarschaft durch den Wert des aktuellen Pixel ersetzt. Letzteres bedingt die adaptive Natur des Algorithmus, da der Hintergrund langsam in den Vordergrund \"uberl\"auft. $n$ wird im Code als \texttt{subsamplingFactor} bezeichnet.
+\paragraph{Adaptivit\"at}
+Sollte das Pixel Teil des Hintergrund sein, so wird das Hintergrundmodell zuf\"allig upgedatet. Im Schnitt jedes $n$-te Mal wird ein zuf\"alliges bestehendes Sample durch durch den Wert des aktuellen Pixel ersetzt. Ebenso wird jedes $n$-te Mal ein zuf\"alliges Sample eines zuf\"alligen Pixels in der Nachbarschaft durch den Wert des aktuellen Pixel ersetzt. Letzteres f\"uhrt dazu, dass der Hintergrund langsam in den Vordergrund \"uberl\"auft. $n$ wird im Code als \texttt{subsamplingFactor} bezeichnet.
 
-Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Variance} subjektiv deutlich sichtbare Verbesserungen erfahren. Um Rauschen noch etwas zu unterdr\"ucken und Komponenten deutlicher darzustellen, wenden wir f\"ur jedes segmentierte Bild noch \textit{Closing} an, und suchen und f\"ullen Konturen, um L\"ocher in Objekten zu schließen, da wir annehmen, dass die Objekte in der Szene keine gro\ss{}en L\"ocher haben bzw. diese irrelevant f\"ur die m\"oglichen Anwendungsf\"alle sind.
+\paragraph{Vergleich}
+Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Variance} subjektiv deutlich sichtbare Verbesserungen erfahren. Um Rauschen noch etwas zu unterdr\"ucken und Komponenten deutlicher darzustellen, wenden wir f\"ur jedes segmentierte Bild noch \textit{Closing} an und f\"ullen Konturen, um L\"ocher in den segmentierten Objekten zu schließen, da wir annehmen, dass die Objekte in der Szene keine gro\ss{}en L\"ocher haben.
 
 \begin{figure}[h!]
 \centering
