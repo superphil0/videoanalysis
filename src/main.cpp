@@ -222,6 +222,21 @@ cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
         }
     }
     
+    cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
+    cv::morphologyEx(segmentationMap, segmentationMap, cv::MORPH_CLOSE, element);
+    
+    vector<vector<cv::Point>> contours;
+    cv::findContours(segmentationMap, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+    
+    for( int i = 0; i< contours.size(); i++ )
+     {
+       cv::drawContours(segmentationMap, contours, i, 255, -1);
+     }
+    
+    //cv::medianBlur(segmentationMap, segmentationMap, 3);
+    
+    
+    
     cv::imshow("Org", image);
     cv::imshow("Seg", segmentationMap);
     cv::waitKey();
