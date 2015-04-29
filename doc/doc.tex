@@ -32,7 +32,11 @@ In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und glob
 \paragraph{\texttt{main()}} Hier werden die Argumente abgearbeitet und die Methode \texttt{processVideo()} aufgerufen.
 
 \section{Color Mean and Variance}\label{sec:cmv}
-Schreiben wir hier etwas dazu \dots
+Bei der Color Mean and Variance Methode wird für jedes Pixel und jeden Farbkanal extra ein Modell gebaut. Jedes Pixel wird als eigenes Signal interpretiert, für das in der Initalisierungphase eine Normalverteilung mit N(\mu, \sigma) gefunden wird. 
+\paragraph{Adaptivit\"at} 
+Um Veränderungen der externen Umst\"ande in das Modell einflie\ss{} zu lassen, flie\ss{} Hintergrund- und Vordergrundpixel, verschieden stark gewichtet wieder in das Modell mit ein.
+\paragraph{Probleme} 
+Bei CMV hatten wir vorallem das Problem, dass wenn Pixel nicht als Vordergrund erkannt werden, sie als Hintergrundpixel entsprechend stark gewichtet werden und unser Modell an entsprechenden Stellen sehr schnell eine hohe Varianz adaptiert, die mehr oder weniger fast alles als Hintergrund detektiert.
 
 \section{ViBe}\label{sec:vibe}
 ViBe ist ein Sample-basierter Algorithmus zum Segmentieren von Vordergrund-Objekten in Videostreams. Das Hintergrundmodell besteht aus $width \times height \times nbSamples$ Samples, wobei $width$ und $height$ die Breite und H\"ohe des Videostreams bezeichnen und $nbSamples$ ein w\"ahlbarer Parameter f\"ur die Anzahl an Samples pro Pixel ist. 
