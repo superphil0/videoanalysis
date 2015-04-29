@@ -147,8 +147,8 @@ cv::Mat processFrameCMV(cv::Mat image, int learnframes, int framenum)
 }
 
 void chooseRandomNeighbor(int x, int y, int &xn, int &yn) {
-    xn = x + rand()%7 - 3;
-    yn = y + rand()%7 - 3;
+    xn = x + rand()%5 - 2;
+    yn = y + rand()%5 - 2;
     
     if (xn < 0) xn = 0;
     if (xn > imgWidth-1) xn = imgWidth-1;

@@ -8,6 +8,8 @@ Marko Mlinaric, 0825603}
 
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \begin{document}
 \maketitle
@@ -33,14 +35,33 @@ In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und glob
 Schreiben wir hier etwas dazu \dots
 
 \section{ViBe}\label{sec:vibe}
-Schreiben wir hier etwas dazu \dots
+ViBe ist ein Sample-basierter Algorithmus zum Segmentieren von Vordergrund-Objekten in Videostreams. Das Hintergrundmodell besteht aus $width \times height \times nbSamples$ Samples, wobei $width$ und $height$ die Breite und H\"ohe des Videostreams bezeichnen und $nbSamples$ ein w\"ahlbarer Parameter f\"ur die Anzahl an Samples pro Pixel ist. 
 
-%\begin{figure}[h!]
-%\centering
-%\includegraphics[width=\textwidth]{fig.png}
-%\caption[]{}
-%\label{fig:fix}
-%\end{figure}
+Laut dem Paper reicht f\"ur die Initialisierung des Hintergrundmodells ein einzelnes Frame, da f\"ur jedes Pixel auch aus der n\"aheren Umgebung gesamplet werden kann. In unserer Implementierung samplen wir dennoch aus mehreren Frames, da durch die Natur der Angabe davon auszugehen ist, dass es immer eine gewisse Anzahl an Initialisierungsframes geben wird. 
+
+Segmentiert wird, indem der Wert jedes Pixels mit den entsprechenden Samples verglichen wird. Es wird gez\"ahlt f\"ur wie viele Samples, die Distanz kleiner einem gegebenem Radius ist. \"Uberschreitet dieser Wert einen weiteren Parameter \texttt{reqMatches}, so wird angenommen, dass das Pixel zum Hintergrund geh\"ort.
+
+Sollte das Pixel Teil des Hintergrund sein, so wird das Hintergrundmodell zuf\"allig upgedatet. Im Schnitt jedes $n$-te Mal wird ein zuf\"alliges Sample f\"ur dieses Pixel durch den Wert des aktuellen Pixel ersetzt. Ebenso wird jedes $n$-te Mal ein zuf\"alliges Sample eines zuf\"alligen Pixels in der Nachbarschaft durch den Wert des aktuellen Pixel ersetzt. Letzteres bedingt die adaptive Natur des Algorithmus, da der Hintergrund langsam in den Vordergrund \"uberl\"auft. $n$ wird im Code als \texttt{subsamplingFactor} bezeichnet.
+
+Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Variance} subjektiv deutlich sichtbare Verbesserungen erfahren. Um Rauschen noch etwas zu unterdr\"ucken und Komponenten deutlicher darzustellen, wenden wir f\"ur jedes segmentierte Bild noch \textit{Closing} an, und suchen und f\"ullen Konturen, um L\"ocher in Objekten zu schließen, da wir annehmen, dass die Objekte in der Szene keine gro\ss{}en L\"ocher haben bzw. diese irrelevant f\"ur die m\"oglichen Anwendungsf\"alle sind.
+
+\begin{figure}[h!]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{S3A3202_0100.jpeg}
+  \caption{Originalbild}
+  \label{fig:orig}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{Seg_S3A3202_0100.jpeg}
+  \caption{Segmentierung}
+  \label{fig:seg}
+\end{subfigure}
+\caption{Vergleich Original und Segmentierung.}
+\label{fig:vergleich}
+\end{figure}
 
 
 \bibliographystyle{ieeetr}
