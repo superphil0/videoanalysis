@@ -27,7 +27,7 @@ int processVideo(string path, string filename, int frames, int initframes)
 	ref_mean = cv::Mat::zeros(image.rows, image.cols,CV_32FC3);
 	ref_var = cv::Mat::zeros(image.rows, image.cols,CV_32FC3);
     
-    pMOG = cv::createBackgroundSubtractorMOG2();
+    //pMOG = cv::createBackgroundSubtractorMOG2();
     
 	// read files in loop
 	for (int i = 0; i < frames; i++)
@@ -48,7 +48,7 @@ int processVideo(string path, string filename, int frames, int initframes)
       
         s = "Processing frame " + fullpath+"\n";
 		printf(s.c_str());
-		cv::Mat result = processFrame2(image, initframes, i);
+		cv::Mat result = processFrame(image, initframes, i);
       
 		string savepath = path + PATH_SEPARATOR + "Seg_" + filename + "_" + str_i + ".jpeg";
 		if (result.data && !DEBUG)
@@ -76,7 +76,7 @@ cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
 		if (framenum == learnframes - 1)
 		{
 			ref_var = ref_var.mul(1.0f/(learnframes - 1));
-			sqrt(ref_var, tmp);
+			//sqrt(ref_var, tmp);
 			ref_var = tmp;
 		}
 		return cv::Mat();
@@ -86,18 +86,27 @@ cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
 		// segment foreground 
 		cv::absdiff(image, ref_mean, delta);
 		// constant = how many sigmas distance
-		tmp = ref_var*3.5f;
+		sqrt(ref_var, tmp);
+		tmp = tmp * 3.5f;
 		tmp = delta >= tmp;
 		cv::cvtColor(tmp, tmp, cv::COLOR_BGR2GRAY);
 		cv::GaussianBlur(tmp, tmp, cv::Size(3, 3), 0, 0);
 		cv::threshold(tmp, tmp, 200.0, 255, cv::THRESH_BINARY);
 		cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
-		cv::morphologyEx(tmp, tmp, cv::MORPH_OPEN, element);
+		cv::morphologyEx(tmp, tmp, cv::MORPH_CLOSE, element);
+		vector<vector<cv::Point>> contours;
+		cv::findContours(tmp, contours, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE);
+		
+		for( int i = 0; i< contours.size(); i++ )
+		 {
+		   cv::drawContours(tmp, contours, i, 255, -1);
+		 }
+    
 
 		// adapt model
 		// calculate coefficient alpha per pixel
 		// in form of: alpha for 0 (background) and 1-alpha for 1 (foreground)
-		float fgAlpha = 0.1f;
+		float fgAlpha = 0.05f;
 		float bgAlpha = 1.0f-fgAlpha;
 		tmp.copyTo(delta);
 		delta.convertTo(delta, CV_32F);
@@ -112,7 +121,7 @@ cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
 		cv::namedWindow("haha", cv::WINDOW_AUTOSIZE);
 		cv::imshow("haha", reciAlpha);
 		cv::absdiff(image, ref_mean, change);
-		ref_var = ref_var.mul(reciAlpha) + delta.mul(change);
+		ref_var = ref_var.mul(reciAlpha) + delta.mul(change.mul(change));
 		ref_mean = ref_mean.mul(reciAlpha) + image.mul(delta);
 		if (DEBUG)
 		{
@@ -245,7 +254,7 @@ cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
 }
 
 cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum) {
-    pMOG->apply(image, fgMask);
+//    pMOG->apply(image, fgMask);
     cv::imshow("Org", image);
     cv::imshow("Seg", fgMask);
     cv::waitKey();
