@@ -48,7 +48,7 @@ int processVideo(string path, string filename, int frames, int initframes)
       
         s = "Processing frame " + fullpath+"\n";
 		printf(s.c_str());
-		cv::Mat result = processFrame2(image, initframes,i);
+		cv::Mat result = processFrame2(image, initframes, i);
       
 		string savepath = path + PATH_SEPARATOR + "Seg_" + filename + "_" + str_i + ".jpeg";
 		if (result.data && !DEBUG)
@@ -137,48 +137,55 @@ cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
 }
 
 void chooseRandomNeighbor(int x, int y, int &xn, int &yn) {
-    int r = rand()%8;
-    switch (r) {
-        case 0: xn = x-1; yn = y-1; break;
-        case 1: xn = x-1; yn = y+0; break;
-        case 2: xn = x-1; yn = y+1; break;
-        case 3: xn = x+1; yn = y-1; break;
-        case 4: xn = x+1; yn = y+0; break;
-        case 5: xn = x+1; yn = y+1; break;
-        case 6: xn = x+0; yn = y+1; break;
-        case 7: xn = x+0; yn = y-1; break;
-    }
+    xn = x + rand()%7 - 3;
+    yn = y + rand()%7 - 3;
+    
     if (xn < 0) xn = 0;
-    if (xn > 719) xn = 719;
+    if (xn > imgWidth-1) xn = imgWidth-1;
     if (yn < 0) yn = 0;
-    if (yn > 575) yn = 575;
+    if (yn > imgHeight-1) yn = imgHeight-1;
 }
 
 cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
-    cv::Size s = image.size();
-    int width = s.width;
-    int height = s.height;
-    
     cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+
+    if (needsInit) {
+        cv::Size s = image.size();
+        imgWidth = s.width;
+        imgHeight = s.height;
     
-    cv::Mat segmentationMap = cv::Mat::zeros(image.size(), CV_8U);
+        samples.resize(imgWidth);
+        for (int i = 0; i < imgWidth; i++) {
+            samples[i].resize(imgHeight);
+            for (int j = 0; j < imgHeight; j++) {
+                samples[i][j].resize(learnframes);
+            }
+        }
+        
+        needsInit = false;
+    }
     
-    if (framenum < 20)
+    if (framenum < learnframes)
 	{
-        for (int x = 0; x < width; x++){
-            for (int y = 0; y < height; y++){
+        for (int x = 0; x < imgWidth; x++){
+            for (int y = 0; y < imgHeight; y++){
                 samples[x][y][framenum] = image.at<uchar>(cv::Point(x,y));
             }
         }
         return cv::Mat();
 	}
     
-    for (int x = 0; x < width; x++){
-        for (int y = 0; y < height; y++){
+    cv::Mat segmentationMap = cv::Mat::zeros(image.size(), CV_8U);
+    
+    for (int x = 0; x < imgWidth; x++){
+        for (int y = 0; y < imgHeight; y++){
             // comparison with the model
             int count = 0, index = 0, distance = 0;
-            while ((count < reqMatches) && (index < nbSamples)){
-                distance = abs(image.at<uchar>(cv::Point(x,y)) - samples[x][y][index]);
+            while ((count < reqMatches) && (index < learnframes)){
+                uchar color_a = image.at<uchar>(cv::Point(x,y));
+                uchar color_b = samples[x][y][index];
+                distance = abs(color_a - color_b);
+                //distance = cv::norm(color_a, color_b, cv::NORM_L2);
                 if (distance < radius)
                     count++;
                 index++;
@@ -192,7 +199,7 @@ cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
                 // update of the current pixel model
                 if (randomNumber == 0){ // random subsampling
                     // other random values are ignored
-                    randomNumber = rand()%nbSamples;
+                    randomNumber = rand()%learnframes;
                     samples[x][y][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }
                 // update of a neighboring pixel model
@@ -202,7 +209,7 @@ cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
                     int neighborX, neighborY;
                     chooseRandomNeighbor(x, y, neighborX, neighborY);
                     // chooses the value to be replaced randomly
-                    randomNumber = rand()%nbSamples;
+                    randomNumber = rand()%learnframes;
                     samples[neighborX][neighborY][randomNumber] = image.at<uchar>(cv::Point(x,y));
                 }	
             }

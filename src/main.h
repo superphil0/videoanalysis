@@ -5,6 +5,7 @@
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/background_segm.hpp>
+#include <vector>
 
 using namespace std;
 cv::Mat ref_var, ref_mean;
@@ -12,11 +13,15 @@ cv::Mat ref_var, ref_mean;
 cv::Ptr<cv::BackgroundSubtractor> pMOG;
 cv::Mat fgMask;
 
-int nbSamples = 20;                   // number of samples per pixel
-int reqMatches = 2;                   // #_min
-int radius = 50;                      // R
-int subsamplingFactor = 16;           // amount of random subsampling
-uchar samples[720][576][20];  // background model
+int imgWidth;
+int imgHeight;
+
+const static int reqMatches = 4;
+const static int radius = 40;
+const static int subsamplingFactor = 4;
+
+bool needsInit = true;
+std::vector<std::vector<std::vector<uchar>>> samples;
 
 #if defined(WIN32) || defined(_WIN32) 
 #define PATH_SEPARATOR "\\" 
