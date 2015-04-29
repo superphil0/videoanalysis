@@ -32,7 +32,8 @@ In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und glob
 \paragraph{\texttt{main()}} Hier werden die Argumente abgearbeitet und die Methode \texttt{processVideo()} aufgerufen.
 
 \section{Color Mean and Variance}\label{sec:cmv}
-Bei der Color Mean and Variance Methode wird für jedes Pixel und jeden Farbkanal extra ein Modell gebaut. Jedes Pixel wird als eigenes Signal interpretiert, für das in der Initalisierungphase eine Normalverteilung mit N(\mu, \sigma) gefunden wird. 
+Bei der Color Mean and Variance Methode wird für jedes Pixel und jeden Farbkanal extra ein Modell gebaut. Jedes Pixel wird als eigenes Signal interpretiert, für das in der Initalisierungphase eine Normalverteilung mit $N(\mu, \sigma)$ gefunden wird. 
+
 \paragraph{Adaptivit\"at} 
 Um Veränderungen der externen Umst\"ande in das Modell einflie\ss{} zu lassen, flie\ss{} Hintergrund- und Vordergrundpixel, verschieden stark gewichtet wieder in das Modell mit ein.
 \paragraph{Probleme} 
