@@ -48,7 +48,7 @@ int processVideo(string path, string filename, int frames, int initframes)
       
         s = "Processing frame " + fullpath+"\n";
 		printf(s.c_str());
-		cv::Mat result = processFrame(image, initframes, i);
+		cv::Mat result = processFrameVIBE(image, initframes, i);
       
 		string savepath = path + PATH_SEPARATOR + "Seg_" + filename + "_" + str_i + ".jpeg";
 		if (result.data && !DEBUG)
@@ -59,7 +59,7 @@ int processVideo(string path, string filename, int frames, int initframes)
 	}
 	return 0;
 }
-cv::Mat processFrame(cv::Mat image, int learnframes, int framenum)
+cv::Mat processFrameCMV(cv::Mat image, int learnframes, int framenum)
 {	
 	image.convertTo(image, CV_32FC3);
 	cv::Mat delta = cv::Mat::zeros(image.size(), image.type());
@@ -155,7 +155,7 @@ void chooseRandomNeighbor(int x, int y, int &xn, int &yn) {
     if (yn > imgHeight-1) yn = imgHeight-1;
 }
 
-cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
+cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
     cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
 
     if (needsInit) {
@@ -254,7 +254,7 @@ cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum) {
 }
 
 cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum) {
-//    pMOG->apply(image, fgMask);
+    pMOG->apply(image, fgMask);
     cv::imshow("Org", image);
     cv::imshow("Seg", fgMask);
     cv::waitKey();

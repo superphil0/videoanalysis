@@ -1,0 +1,49 @@
+\title{Video Analysis\\
+1. \"Ubungsaufgabe}
+\author{Philipp Omenitsch, xyzxyz\\
+Marko Mlinaric, 0825603}
+\date{\vspace{-5ex}}
+
+\documentclass[]{scrartcl}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+\maketitle
+
+\section{\"Uberblick zur Implementation und Source-Code}
+Die 1. Aufgabe bestand darin ein Verfahren zur Segmentierung von Vordergrundobjekten in Videostreams zu implementieren. Daf\"ur haben wir zuerst den Versuch unternommen, die in der Angabe vorgestellte Methode \textbf{\textit{Color Mean and Variance}} zu implementieren. Als wir allerdings auf Probleme gesto\ss{}en sind, haben wir als Alternative die \textbf{\textit{ViBe}} Methode implementiert \cite{barnich2011vibe}.
+
+Wir haben C++ und OpenCV gew\"ahlt um die Aufgabe zu l\"osen. Unser Source-Code besteht aus den beiden Files \texttt{main.h} und \texttt{main.cpp}.
+
+In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und globale Variablen, die wir verwendet haben. Der Gro\ss{}teil der Implementation befindet sich im Sourcefile \texttt{main.cpp}. Der Code ist folgendermaßen aufgegliedert:
+
+\paragraph{\texttt{processFrameCMV()}} Unsere Implementierung der \textit{Color Mean and Variance}-Methode. N\"aheres dazu im Abschnitt \ref{sec:cmv}.
+
+\paragraph{\texttt{processFrameVIBE()}} Unsere Implementierung der \textit{ViBe}-Methode. N\"aheres dazu im Abschnitt \ref{sec:vibe}.
+
+\paragraph{\texttt{processFrameMOG()}} Eine Funktion, welche die OpenCV eigene Implementierung des \textit{Gaussian Mixture}-basierten Segmentierungs-Algorithmus' verwendet.
+
+\paragraph{\texttt{processVideo()}} Diese Methode iteriert \"uber die Bild-Dateien und ruft f\"ur jede Datei eine der oben genannten Methoden auf. Sie erh\"alt anschlie\ss{}end das segmentierte Bild und speichert dieses als Datei ab.
+
+\paragraph{\texttt{main()}} Hier werden die Argumente abgearbeitet und die Methode \texttt{processVideo()} aufgerufen.
+
+\section{Color Mean and Variance}\label{sec:cmv}
+Schreiben wir hier etwas dazu \dots
+
+\section{ViBe}\label{sec:vibe}
+Schreiben wir hier etwas dazu \dots
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=\textwidth]{fig.png}
+%\caption[]{}
+%\label{fig:fix}
+%\end{figure}
+
+
+\bibliographystyle{ieeetr}
+\bibliography{main}
+
+\end{document}

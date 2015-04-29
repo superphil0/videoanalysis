@@ -31,9 +31,9 @@ std::vector<std::vector<std::vector<uchar>>> samples;
 
 int processVideo(string path, string filename, int frames, int initframes);
 
-cv::Mat processFrame(cv::Mat image, int learnframes, int framenum);
+cv::Mat processFrameCMV(cv::Mat image, int learnframes, int framenum);
 
-cv::Mat processFrame2(cv::Mat image, int learnframes, int framenum);
+cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum);
 
 cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum);
 
