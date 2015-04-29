@@ -32,18 +32,19 @@ int processVideo(string path, string filename, int frames, int initframes)
 	// read files in loop
 	for (int i = 0; i < frames; i++)
 	{
-        string s = "Loading frame " + fullpath+"\n";
-		printf("%s", s.c_str());
-    
 		ostringstream ss;
 		ss << setw(4) << setfill('0') << i;
 		string str_i(ss.str());
 		string fullpath = path + PATH_SEPARATOR + filename + "_" + str_i +".jpeg";
 
+        string s = "Loading frame " + fullpath+"\n";
+		printf("%s", s.c_str());
+
 		image = cv::imread(fullpath, cv::IMREAD_COLOR);
 		if (!image.data)
 		{
 			printf(" No image data \n ");
+            return 0;
 		}
       
         s = "Processing frame " + fullpath+"\n";
