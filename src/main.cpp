@@ -1,7 +1,7 @@
 #include "main.h"
 #include <cstdint>
 #include <math.h>
-#define DEBUG 1
+#define DEBUG 0
 int main(int argc, char** argv)
 {
 	if (argc < 5)
@@ -268,7 +268,7 @@ cv::Mat processFrameVIBE(cv::Mat image, int learnframes, int framenum) {
 }
 
 cv::Mat processFrameWithMOG(cv::Mat image, int learnframes, int framenum) {
-    pMOG->apply(image, fgMask);
+//    pMOG->apply(image, fgMask);
     if (DEBUG) {
         cv::imshow("Org", image);
         cv::imshow("Seg", fgMask);
