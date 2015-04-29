@@ -15,13 +15,9 @@ Marko Mlinaric, 0825603}
 \maketitle
 
 \section{\"Uberblick zur Implementation und Source-Code}
-Die 1. Aufgabe bestand darin ein Verfahren zur Segmentierung von Vordergrundobjekten in Videostreams zu implementieren. Daf\"ur haben wir zuerst den Versuch unternommen, die in der Angabe vorgestellte Methode \textbf{\textit{Color Mean and Variance}} zu implementieren. Als wir allerdings auf Probleme gesto\ss{}en sind, haben wir als Alternative die \textbf{\textit{ViBe}} Methode implementiert \cite{barnich2011vibe}.
+Die 1. Aufgabe bestand darin ein Verfahren zur Segmentierung von Vordergrundobjekten in Videostreams zu implementieren. Daf\"ur haben wir zuerst den Versuch unternommen, die in der Angabe vorgestellte Methode \textbf{\textit{Color Mean and Variance}} zu implementieren. Als wir allerdings auf Probleme gesto\ss{}en sind, haben wir als Alternative die \textbf{\textit{ViBe}} Methode implementiert \cite{barnich2011vibe}. Ein Beispiel f\"ur unser Endresultat ist in Figure \ref{fig:vergleich} zu sehen.
 
-Wir haben C++ und OpenCV gew\"ahlt um die Aufgabe zu l\"osen. Unser Source-Code besteht aus den beiden Files \texttt{main.h} und \texttt{main.cpp}.
-
-In Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und globale Variablen, die wir verwendet haben. Der Gro\ss{}teil der Implementation befindet sich im Sourcefile \texttt{main.cpp}. 
-
-
+Wir haben C++ und OpenCV gew\"ahlt um die Aufgabe zu l\"osen. Unser Source-Code besteht aus den beiden Files \texttt{main.h} und \texttt{main.cpp}. Im	 Header-File \texttt{main.h} befinden sich Deklarationen von Methoden und globale Variablen, die wir verwendet haben. Der Gro\ss{}teil der Implementation befindet sich im Sourcefile \texttt{main.cpp}. 
 
 \section{Color Mean and Variance}\label{sec:cmv}
 Bei der Color Mean and Variance Methode wird f\"ur jedes Pixel und jeden Farbkanal extra ein Modell gebaut. Jedes Pixel wird als eigenes Signal interpretiert, f\"ur das in der Initalisierungphase eine Normalverteilung mit $N(\mu, \sigma)$ gefunden wird. 
@@ -44,7 +40,14 @@ Segmentiert wird, indem der Wert jedes Pixels mit den entsprechenden Samples ver
 Sollte das Pixel Teil des Hintergrund sein, so wird das Hintergrundmodell zuf\"allig upgedatet. Im Schnitt jedes $n$-te Mal wird ein zuf\"alliges bestehendes Sample durch durch den Wert des aktuellen Pixel ersetzt. Ebenso wird jedes $n$-te Mal ein zuf\"alliges Sample eines zuf\"alligen Pixels in der Nachbarschaft durch den Wert des aktuellen Pixel ersetzt. Letzteres f\"uhrt dazu, dass der Hintergrund langsam in den Vordergrund \"uberl\"auft. $n$ wird im Code als \texttt{subsamplingFactor} bezeichnet. Siehe dazu auch Figure \ref{fig:adaption}.
 
 \paragraph{Vergleich.}
-Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Variance} subjektiv deutlich sichtbare Verbesserungen erfahren. Um Rauschen noch etwas zu unterdr\"ucken und Komponenten deutlicher darzustellen, wenden wir f\"ur jedes segmentierte Bild noch \textit{Closing} an und f\"ullen Konturen, um L\"ocher in den segmentierten Objekten zu schließen, da wir annehmen, dass die Objekte in der Szene keine gro\ss{}en L\"ocher haben.
+Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Variance} subjektiv deutlich sichtbare Verbesserungen erfahren. Siehe dazu den direkten Vergleich mit CMV in Figure \ref{fig:comp}. 
+
+Um Rauschen noch etwas zu unterdr\"ucken und Komponenten deutlicher darzustellen, wenden wir f\"ur jedes segmentierte Bild noch \textit{Closing} an und f\"ullen Konturen, um L\"ocher in den segmentierten Objekten zu schließen, da wir annehmen, dass die Objekte in der Szene keine gro\ss{}en L\"ocher haben.
+
+\bibliographystyle{ieeetr}
+\bibliography{main}
+
+\pagebreak
 
 \begin{figure}[h!]
 \centering
@@ -60,8 +63,32 @@ Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Varian
   \caption{Segmentierung}
   \label{fig:seg}
 \end{subfigure}
-\caption{Vergleich Original und Segmentierung.}
+\caption{Vergleich Original und Segmentierung mittels ViBe.}
 \label{fig:vergleich}
+\end{figure}
+
+\begin{figure}[h!]
+\centering
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{S21-2_0120.jpeg}
+  \caption{Originalbild}
+  \label{fig:comp_orig}
+\end{subfigure}%
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{Seg_S21-2_0120-CMV.jpeg}
+  \caption{CMV}
+  \label{fig:comp_cmv}
+\end{subfigure}
+\begin{subfigure}{.33\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{Seg_S21-2_0120-VIBE.jpeg}
+  \caption{ViBe}
+  \label{fig:comp_vibe}
+\end{subfigure}
+\caption{Vergleich Original, CMV und ViBe.}
+\label{fig:comp}
 \end{figure}
 
 \begin{figure}[h!]
@@ -105,9 +132,5 @@ Wir haben durch diesen Algorithmus im Vergleich zu \textit{Color Mean and Varian
 \caption{Adaption. Objekt verschwindet in den Hintergrund.}
 \label{fig:adaption}
 \end{figure}
-
-
-\bibliographystyle{ieeetr}
-\bibliography{main}
 
 \end{document}
